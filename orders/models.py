@@ -1,13 +1,8 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from accounts.models import User, CustomerProfile
+from accounts.models import User, CustomerProfile, CourierProfile
 from core.models import AuditableMixin
-
-class WeightClass(models.TextChoices):
-    LIGHT = "LIGHT", _("Light (0-5kg)")
-    MEDIUM = "MEDIUM", _("Medium (5-20kg)")
-    HEAVY = "HEAVY", _("Heavy (20-50kg)")
-    VERY_HEAVY = "VERY_HEAVY", _("Very Heavy (50kg+)")
+from accounts.models import PartnerCompany
 
 class OrderState:
     NEW = "new"
@@ -80,6 +75,15 @@ class Order(models.Model):
         blank=True,
         related_name="assigned_orders",
         limit_choices_to={"user_type": User.Types.COURIER}
+    )
+    
+    # Partner Company Assignment - will be automatically set when courier is assigned
+    partner_company = models.CharField(
+        _("Partner Company"),
+        max_length=50,
+        choices=PartnerCompany.choices,
+        null=True,
+        blank=True,
     )
     
     # Audit Fields

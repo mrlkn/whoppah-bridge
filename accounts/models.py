@@ -88,7 +88,17 @@ class User(AbstractUser):
     def is_customer(self):
         return self.user_type == self.Types.CUSTOMER
 
-
+class PartnerCompany(models.TextChoices):
+    HOEKSTRA = "HOEKSTRA", _("Hoekstra")
+    VINTAGE_EXPRESS = "VINTAGE_EXPRESS", _("Vintage Express")
+    MAGIC_MOVERS = "MAGIC_MOVERS", _("Magic Movers")
+    SW_DE_VRIES_LOGISTICS = "SW_DE_VRIES_LOGISTICS", _("SW de Vries Logistics")
+    LIBERO_LOGISTICS = "LIBERO_LOGISTICS", _("Libero Logistics")
+    TRANSPOKSI = "TRANSPOKSI", _("Transpoksi")
+    TRUSK = "TRUSK", _("Trusk")
+    COCOLIS = "COCOLIS", _("Cocolis")
+    MH_TRANSPORT = "MH_TRANSPORT", _("MH Transport")
+    
 class CourierProfile(models.Model):
     """Additional information for couriers."""
     
@@ -97,6 +107,13 @@ class CourierProfile(models.Model):
         on_delete=models.CASCADE, 
         related_name="courier_profile",
         limit_choices_to={"user_type": User.Types.COURIER}
+    )
+    partner_company = models.CharField(
+        _("Partner Company"),
+        max_length=50,
+        choices=PartnerCompany.choices,
+        null=True,
+        blank=False,
     )
     vehicle_type = models.CharField(
         _("Vehicle Type"), 

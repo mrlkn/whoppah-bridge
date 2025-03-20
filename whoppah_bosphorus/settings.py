@@ -69,6 +69,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'debug_toolbar.middleware.DebugToolbarMiddleware',  # Debug Toolbar middleware
     'accounts.middleware.RoleBasedAccessMiddleware',  # Role-based access control middleware
+    'accounts.middleware.PartnerCompanyMiddleware',  # Partner company access control middleware
     'accounts.middleware.ActivityTrackingMiddleware',  # User activity tracking middleware
     'core.middleware.AuditMiddleware',  # Audit trail middleware
 ]

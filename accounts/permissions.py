@@ -71,3 +71,72 @@ class IsOwnerOrAdmin(permissions.BasePermission):
         
         # Check if object has user attribute and it matches the request user
         return hasattr(obj, 'user') and obj.user == request.user
+
+
+class SamePartnerCompanyPermission(permissions.BasePermission):
+    """
+    Permission class to check if a user belongs to the same partner company as an object.
+    Used for partner-specific access control.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Admin can access any object
+        if request.user.user_type == 'ADMIN':
+            return True
+        
+        # If user is not a courier, they have no partner company, deny access
+        if request.user.user_type != 'COURIER':
+            return False
+            
+        # Get courier's partner company
+        try:
+            courier_partner = request.user.courier_profile.partner_company
+        except:
+            return False
+            
+        # Check if object has partner_company attribute and it matches the user's partner company
+        if hasattr(obj, 'partner_company') and obj.partner_company == courier_partner:
+            return True
+            
+        # For orders assigned to a courier, also check the assigned_courier's partner company
+        if hasattr(obj, 'assigned_courier') and obj.assigned_courier:
+            try:
+                return obj.assigned_courier.courier_profile.partner_company == courier_partner
+            except:
+                pass
+                
+        return False
+
+
+class CourierListPermission(permissions.BasePermission):
+    """
+    Permission class for courier list views.
+    Admins can see all couriers, partner users can only see couriers from their company.
+    """
+    def has_permission(self, request, view):
+        # Admins can view all
+        if request.user.user_type == 'ADMIN':
+            return True
+            
+        # Only couriers and admins can access
+        if request.user.user_type != 'COURIER':
+            return False
+            
+        # For list actions, always allow (filtering will happen in the queryset)
+        if getattr(view, 'action', None) == 'list':
+            return True
+            
+        return True
+        
+    def filter_queryset(self, request, queryset, view):
+        """Filter the queryset based on partner company."""
+        # Admins can see everything
+        if request.user.user_type == 'ADMIN':
+            return queryset
+            
+        # Get courier's partner company
+        try:
+            partner_company = request.user.courier_profile.partner_company
+            # Filter couriers by the same partner company
+            return queryset.filter(courier_profile__partner_company=partner_company)
+        except:
+            return queryset.none()  # Return empty queryset if no partner found

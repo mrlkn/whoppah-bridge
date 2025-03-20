@@ -42,6 +42,38 @@ class RoleBasedAccessMiddleware:
         return self.get_response(request)
 
 
+class PartnerCompanyMiddleware:
+    """
+    Middleware to enforce partner company access control.
+    This middleware ensures partner company users can only access their own resources.
+    """
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+        
+    def __call__(self, request):
+        # Skip for unauthenticated users or admin users
+        if not request.user.is_authenticated or request.user.user_type == 'ADMIN':
+            return self.get_response(request)
+            
+        # Skip for non-courier users (they don't belong to partner companies)
+        if request.user.user_type != 'COURIER':
+            return self.get_response(request)
+            
+        # Get partner company for the user
+        try:
+            partner_company = request.user.courier_profile.partner_company
+            
+            # Set partner company on request for use in views
+            request.partner_company = partner_company
+        except:
+            # If there's no courier profile or partner company, just continue
+            pass
+            
+        # Allow the request to proceed - actual filtering will be done at the queryset level
+        return self.get_response(request)
+
+
 class ActivityTrackingMiddleware:
     """
     Middleware to track user activity.

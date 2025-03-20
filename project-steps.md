@@ -149,6 +149,28 @@
   - **Step Dependencies**: Step 10, Step 11
   - **User Instructions**: None
 
+- [ ] Step Intermediate: Implement Partner Company Role System
+  - **Task**: Adjust groups, roles, and permissions to support partner companies. There are 3 different user types (Admin, Courier, Customer) with Couriers being the main users. Each partner company can create couriers for themselves, see orders that belong to them, and access customer details related to their orders.
+  - **Files**:
+    - `accounts/models.py`: Update CourierProfile model to include partner company field with choices
+    - `accounts/permissions.py`: Add partner-based permission logic 
+    - `accounts/middleware.py`: Update middleware to handle partner-specific permissions
+    - `orders/models.py`: Update Order model to track partner company
+    - `accounts/admin.py`: Enhance admin interface for partner company management
+    - `accounts/migrations/xxxx_add_partner_company.py`: Migration for model changes
+  - **Step Dependencies**: Step 4
+  - **User Instructions**: After code generation, run `python manage.py makemigrations` and `python manage.py migrate` to update the database schema.
+  - **Implementation Notes**:
+    - Partner companies include: HOEKSTRA, VINTAGE_EXPRESS, MAGIC_MOVERS, SW_DE_VRIES_LOGISTICS, LIBERO_LOGISTICS, TRANSPOKSI, TRUSK, COCOLIS, MH_TRANSPORT
+    - Admins can do anything in the system
+    - Customers are for informational purposes only
+    - No separation needed for users inside a partner (e.g., no distinction between hoekstra admin vs hoekstra courier)
+    - When an order is assigned to a courier, it should automatically be associated with that courier's partner company
+    - Partner companies should only see orders and customers related to their assigned orders
+    - Partner companies should be able to create and manage their own courier users
+    - Filtering in views and APIs should respect these partner boundaries
+
+
 # WhoppahBridge Adjusted Implementation Plan
 
 ## API Integration
