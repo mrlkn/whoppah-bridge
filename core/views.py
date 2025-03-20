@@ -5,7 +5,7 @@ from django.db.models import Count, Sum, Q
 from django.utils import timezone
 from datetime import timedelta
 from django.urls import reverse
-from orders.models import Order, OrderStatus
+from orders.models import Order, OrderState
 from accounts.models import CourierProfile
 
 # Create your views here.
@@ -22,9 +22,9 @@ def admin_dashboard(request):
     
     # Orders metrics
     total_orders = Order.objects.count()
-    new_orders = Order.objects.filter(status=OrderStatus.NEW).count()
-    orders_in_progress = Order.objects.filter(status=OrderStatus.IN_TRANSIT).count()
-    orders_delivered = Order.objects.filter(status=OrderStatus.DELIVERED).count()
+    new_orders = Order.objects.filter(status=OrderState.NEW).count()
+    orders_in_progress = Order.objects.filter(status=OrderState.SHIPPED).count()
+    orders_delivered = Order.objects.filter(status=OrderState.DELIVERED).count()
     
     # Weekly orders data
     last_week_orders = Order.objects.filter(created_at__date__gte=week_ago)

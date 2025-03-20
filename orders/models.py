@@ -9,13 +9,26 @@ class WeightClass(models.TextChoices):
     HEAVY = "HEAVY", _("Heavy (20-50kg)")
     VERY_HEAVY = "VERY_HEAVY", _("Very Heavy (50kg+)")
 
-class OrderStatus(models.TextChoices):
-    NEW = "NEW", _("New")
-    ASSIGNED = "ASSIGNED", _("Assigned to Courier")
-    IN_TRANSIT = "IN_TRANSIT", _("In Transit")
-    DELIVERED = "DELIVERED", _("Delivered")
-    CANCELLED = "CANCELLED", _("Cancelled")
-    RETURNED = "RETURNED", _("Returned")
+class OrderState:
+    NEW = "new"
+    CANCELED = "canceled"
+    EXPIRED = "expired"
+    ACCEPTED = "accepted"
+    SHIPPED = "shipped"
+    DISPUTED = "disputed"
+    COMPLETED = "completed"
+    DELIVERED = "delivered"
+
+    CHOICES = [
+        (NEW, _("New")),
+        (CANCELED, _("Canceled")),
+        (ACCEPTED, _("Accepted")),
+        (SHIPPED, _("Shipped")),
+        (DISPUTED, _("Disputed")),
+        (COMPLETED, _("Completed")),
+        (EXPIRED, _("Expired")),
+        (DELIVERED, _("Delivered")),
+    ]
 
 class Order(models.Model):
     """
@@ -30,11 +43,12 @@ class Order(models.Model):
     product_url = models.URLField(_("Product URL"), max_length=255, blank=True)
     product_category = models.CharField(_("Product Category"), max_length=100, blank=True)
     product_name = models.CharField(_("Product Name"), max_length=255)
-    weight_class = models.CharField(
-        _("Weight Class"),
-        max_length=20,
-        choices=WeightClass.choices,
-        default=WeightClass.MEDIUM
+    weight = models.DecimalField(
+        _("weight"),
+        blank=True,
+        null=True,
+        max_digits=12,
+        decimal_places=2,
     )
     two_man_delivery = models.BooleanField(_("2-Man Delivery Required"), default=False)
     
@@ -54,8 +68,8 @@ class Order(models.Model):
     status = models.CharField(
         _("Order Status"),
         max_length=20,
-        choices=OrderStatus.choices,
-        default=OrderStatus.NEW
+        choices=OrderState.CHOICES,
+        default=OrderState.NEW
     )
     
     # Courier Assignment

@@ -82,8 +82,8 @@
     </div>
     
     <div class="statistics-card">
-      <h3>{% trans 'Orders by Weight Class' %}</h3>
-      {% for weight, count in orders_by_weight_class.items %}
+      <h3>{% trans 'Orders by Weight' %}</h3>
+      {% for weight, count in orders_by_weight.items %}
       <div class="statistics-item">
         <span class="statistics-label">{{ weight }}</span>
         <span class="statistics-value">{{ count }}</span>
@@ -91,7 +91,7 @@
       {% endfor %}
       <div class="statistics-total">
         <span>{% trans 'Total' %}</span>
-        <span>{{ orders_by_weight_class.values|sum }}</span>
+        <span>{{ orders_by_weight.values|sum }}</span>
       </div>
     </div>
     

@@ -8,18 +8,29 @@ from django.contrib.admin import SimpleListFilter
 from django.db.models import Q
 import csv
 from datetime import datetime
-from .models import Order, PickupAddress, DropoffAddress, OrderNote, WeightClass
+from .models import Order, PickupAddress, DropoffAddress, OrderNote, OrderState
 
-class WeightClassFilter(SimpleListFilter):
-    title = _('Weight Class')
-    parameter_name = 'weight_class'
+class WeightFilter(SimpleListFilter):
+    title = _('Weight')
+    parameter_name = 'weight'
     
     def lookups(self, request, model_admin):
-        return WeightClass.choices
+        return (
+            ('light', _('Light (0-5kg)')),
+            ('medium', _('Medium (5-20kg)')),
+            ('heavy', _('Heavy (20-50kg)')),
+            ('very_heavy', _('Very Heavy (50kg+)')),
+        )
     
     def queryset(self, request, queryset):
-        if self.value():
-            return queryset.filter(weight_class=self.value())
+        if self.value() == 'light':
+            return queryset.filter(weight__lte=5)
+        if self.value() == 'medium':
+            return queryset.filter(weight__gt=5, weight__lte=20)
+        if self.value() == 'heavy':
+            return queryset.filter(weight__gt=20, weight__lte=50)
+        if self.value() == 'very_heavy':
+            return queryset.filter(weight__gt=50)
         return queryset
 
 class TwoManDeliveryFilter(SimpleListFilter):
@@ -87,21 +98,21 @@ class OrderNoteInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ('order_id', 'product_name_display', 'order_date', 'status_badge', 'weight_class', 
+    list_display = ('order_id', 'product_name_display', 'order_date', 'status_badge', 'weight_display', 
                     'assigned_courier_display', 'pickup_city', 'dropoff_city', 'two_man_delivery_icon')
-    list_filter = ('status', 'order_date', WeightClassFilter, TwoManDeliveryFilter, CourierFilter)
+    list_filter = ('status', 'order_date', WeightFilter, TwoManDeliveryFilter, CourierFilter)
     search_fields = ('order_id', 'product_name', 'pickup_address__customer_name', 'pickup_address__city',
                      'dropoff_address__customer_name', 'dropoff_address__city')
     date_hierarchy = 'order_date'
     list_per_page = 25
-    actions = ['export_as_csv', 'mark_as_in_progress', 'mark_as_delivered', 'mark_as_cancelled']
+    actions = ['export_as_csv', 'mark_as_accepted', 'mark_as_shipped', 'mark_as_delivered', 'mark_as_canceled']
     
     fieldsets = (
         (_('Order Information'), {
             'fields': ('order_id', 'order_date', 'order_url', 'status', 'assigned_courier')
         }),
         (_('Product Information'), {
-            'fields': ('product_name', 'product_category', 'product_url', 'weight_class', 'two_man_delivery')
+            'fields': ('product_name', 'product_category', 'product_url', 'weight', 'two_man_delivery')
         }),
         (_('Product Dimensions'), {
             'fields': ('height', 'width', 'depth', 'seat_height')
@@ -134,7 +145,7 @@ class OrderAdmin(admin.ModelAdmin):
             **self.admin_site.each_context(request),
             'title': _('Order Statistics'),
             'orders_by_status': self._get_orders_by_status(),
-            'orders_by_weight_class': self._get_orders_by_weight_class(),
+            'orders_by_weight': self._get_orders_by_weight(),
             'two_man_delivery_count': Order.objects.filter(two_man_delivery=True).count(),
             'opts': self.model._meta,
         }
@@ -142,14 +153,17 @@ class OrderAdmin(admin.ModelAdmin):
     
     def _get_orders_by_status(self):
         result = {}
-        for status_code, status_name in Order.OrderStatus.choices:
+        for status_code, status_name in OrderState.CHOICES:
             result[status_name] = Order.objects.filter(status=status_code).count()
         return result
     
-    def _get_orders_by_weight_class(self):
-        result = {}
-        for weight_code, weight_name in Order.WeightClass.choices:
-            result[weight_name] = Order.objects.filter(weight_class=weight_code).count()
+    def _get_orders_by_weight(self):
+        result = {
+            _('Light (0-5kg)'): Order.objects.filter(weight__lte=5).count(),
+            _('Medium (5-20kg)'): Order.objects.filter(weight__gt=5, weight__lte=20).count(),
+            _('Heavy (20-50kg)'): Order.objects.filter(weight__gt=20, weight__lte=50).count(),
+            _('Very Heavy (50kg+)'): Order.objects.filter(weight__gt=50).count(),
+        }
         return result
     
     def product_name_display(self, obj):
@@ -159,17 +173,26 @@ class OrderAdmin(admin.ModelAdmin):
     product_name_display.short_description = _('Product')
     product_name_display.admin_order_field = 'product_name'
     
+    def weight_display(self, obj):
+        if obj.weight is not None:
+            return f"{obj.weight} kg"
+        return "-"
+    weight_display.short_description = _('Weight')
+    weight_display.admin_order_field = 'weight'
+    
     def status_badge(self, obj):
         status_colors = {
-            'NEW': 'primary',
-            'ASSIGNED': 'info',
-            'IN_PROGRESS': 'warning',
-            'DELIVERED': 'success',
-            'CANCELLED': 'danger',
-            'RETURNED': 'secondary',
+            'new': 'primary',
+            'accepted': 'info',
+            'shipped': 'warning',
+            'delivered': 'success',
+            'canceled': 'danger',
+            'expired': 'secondary',
+            'disputed': 'danger',
+            'completed': 'success',
         }
         color = status_colors.get(obj.status, 'secondary')
-        status_display = dict(Order.OrderStatus.choices).get(obj.status, obj.status)
+        status_display = dict(OrderState.CHOICES).get(obj.status, obj.status)
         return format_html('<span class="badge bg-{}">{}</span>', color, status_display)
     status_badge.short_description = _('Status')
     status_badge.admin_order_field = 'status'
@@ -199,10 +222,28 @@ class OrderAdmin(admin.ModelAdmin):
         if obj.two_man_delivery:
             return format_html('<span class="two-man-icon">👥</span>')
         return ''
-    two_man_delivery_icon.short_description = _('2-Man')
-    two_man_delivery_icon.admin_order_field = 'two_man_delivery'
+    two_man_delivery_icon.short_description = ''
     
-    # Bulk actions
+    def mark_as_accepted(self, request, queryset):
+        updated = queryset.update(status=OrderState.ACCEPTED, updated_by=request.user)
+        self.message_user(request, _(f"{updated} orders marked as accepted."))
+    mark_as_accepted.short_description = _("Mark selected orders as accepted")
+    
+    def mark_as_shipped(self, request, queryset):
+        updated = queryset.update(status=OrderState.SHIPPED, updated_by=request.user)
+        self.message_user(request, _(f"{updated} orders marked as shipped."))
+    mark_as_shipped.short_description = _("Mark selected orders as shipped")
+    
+    def mark_as_delivered(self, request, queryset):
+        updated = queryset.update(status=OrderState.DELIVERED, updated_by=request.user)
+        self.message_user(request, _(f"{updated} orders marked as delivered."))
+    mark_as_delivered.short_description = _("Mark selected orders as delivered")
+    
+    def mark_as_canceled(self, request, queryset):
+        updated = queryset.update(status=OrderState.CANCELED, updated_by=request.user)
+        self.message_user(request, _(f"{updated} orders marked as canceled."))
+    mark_as_canceled.short_description = _("Mark selected orders as canceled")
+    
     def export_as_csv(self, request, queryset):
         meta = self.model._meta
         field_names = [field.name for field in meta.fields]
@@ -220,21 +261,6 @@ class OrderAdmin(admin.ModelAdmin):
             
         return response
     export_as_csv.short_description = _("Export selected orders as CSV")
-    
-    def mark_as_in_progress(self, request, queryset):
-        updated = queryset.update(status=Order.OrderStatus.IN_PROGRESS, updated_by=request.user)
-        self.message_user(request, _(f"{updated} orders marked as in progress."))
-    mark_as_in_progress.short_description = _("Mark selected orders as in progress")
-    
-    def mark_as_delivered(self, request, queryset):
-        updated = queryset.update(status=Order.OrderStatus.DELIVERED, updated_by=request.user)
-        self.message_user(request, _(f"{updated} orders marked as delivered."))
-    mark_as_delivered.short_description = _("Mark selected orders as delivered")
-    
-    def mark_as_cancelled(self, request, queryset):
-        updated = queryset.update(status=Order.OrderStatus.CANCELLED, updated_by=request.user)
-        self.message_user(request, _(f"{updated} orders marked as cancelled."))
-    mark_as_cancelled.short_description = _("Mark selected orders as cancelled")
     
     def save_model(self, request, obj, form, change):
         """Set the created_by and updated_by fields when saved from admin"""
