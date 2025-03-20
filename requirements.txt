@@ -1,0 +1,9 @@
+django==5.1.6
+# psycopg2-binary==2.9.9  # PostgreSQL adapter - install this when PostgreSQL is available
+python-dotenv==1.0.1  # For environment variables
+django-environ==0.11.2  # Django environment handling
+django-unfold==0.50.0  # Admin theme mentioned in Step 3
+unfold-admin==0.8.0  # Additional Unfold components
+whitenoise==6.6.0  # For serving static files
+gunicorn==21.2.0  # For production deployment
+django-debug-toolbar==4.3.0  # For development debugging

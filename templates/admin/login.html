@@ -1,0 +1,92 @@
+{% extends "admin/login.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" type="text/css" href="{% static 'admin/css/custom.css' %}">
+<style>
+  #header {
+    height: auto;
+    padding: 15px 16px;
+    justify-content: center;
+    background-color: #005D33;
+  }
+  
+  #header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  
+  .login .form-row {
+    padding: 8px 0;
+  }
+  
+  .login .submit-row {
+    padding: 15px 0 0 0;
+  }
+  
+  .login .submit-row input {
+    width: 100%;
+    padding: 12px;
+    background-color: #005D33;
+    transition: all 0.2s;
+  }
+  
+  .login .submit-row input:hover {
+    background-color: #007A44;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .login .form-row input {
+    padding: 10px;
+    border-radius: 4px;
+  }
+  
+  .login .form-row input:focus {
+    border-color: #005D33;
+    box-shadow: 0 0 0 2px rgba(0, 93, 51, 0.2);
+  }
+  
+  .login #container {
+    width: 400px;
+    margin: 60px auto;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  
+  .login-extra {
+    margin-top: 15px;
+    text-align: center;
+    font-size: 0.9em;
+    color: #555;
+  }
+  
+  body.login {
+    background-color: #E6F2ED;
+  }
+  
+  .login .brand-icon {
+    font-size: 1.5rem;
+    margin-right: 8px;
+  }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+  <a href="{% url 'admin:index' %}">
+    <span class="brand-icon">🚚</span>
+    <span class="brand-text">WhoppahBridge</span>
+  </a>
+</h1>
+{% endblock %}
+
+{% block content %}
+{{ block.super }}
+<div class="login-extra">
+  <p>Secure courier and order management for Whoppah.</p>
+</div>
+{% endblock %}

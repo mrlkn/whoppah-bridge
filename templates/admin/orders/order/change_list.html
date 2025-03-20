@@ -1,0 +1,94 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static %}
+
+{% block object-tools-items %}
+  <li>
+    <a href="{% url 'admin:order-statistics' %}" class="btn btn-info">
+      {% trans "Order Statistics" %}
+    </a>
+  </li>
+  {{ block.super }}
+{% endblock %}
+
+{% block result_list %}
+  {# Add extra styling for the order list #}
+  <style>
+    .courier-tag {
+      display: inline-block;
+      padding: 2px 8px;
+      background-color: #17a2b8;
+      color: white;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+    .unassigned-tag {
+      color: #6c757d;
+      font-style: italic;
+    }
+    .two-man-icon {
+      font-size: 1.2em;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 7px;
+      font-size: 0.75em;
+      font-weight: 700;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+      vertical-align: baseline;
+      border-radius: 4px;
+    }
+    .bg-primary { background-color: #007bff; color: white; }
+    .bg-info { background-color: #17a2b8; color: white; }
+    .bg-warning { background-color: #ffc107; color: black; }
+    .bg-success { background-color: #28a745; color: white; }
+    .bg-danger { background-color: #dc3545; color: white; }
+    .bg-secondary { background-color: #6c757d; color: white; }
+  </style>
+  {{ block.super }}
+{% endblock %}
+
+{% block footer %}
+  {{ block.super }}
+  <script>
+    // Quick filters at the top of the list
+    document.addEventListener('DOMContentLoaded', function() {
+      const statusLinks = [
+        { status: 'NEW', label: '{% trans "New" %}' },
+        { status: 'ASSIGNED', label: '{% trans "Assigned" %}' },
+        { status: 'IN_PROGRESS', label: '{% trans "In Progress" %}' },
+        { status: 'DELIVERED', label: '{% trans "Delivered" %}' },
+        { status: 'CANCELLED', label: '{% trans "Cancelled" %}' }
+      ];
+      
+      // Create filter buttons container
+      const toolbarContainer = document.querySelector('.object-tools');
+      if (toolbarContainer) {
+        const filterContainer = document.createElement('div');
+        filterContainer.className = 'status-filter-buttons';
+        filterContainer.style.marginBottom = '15px';
+        
+        // Create a button for each status
+        statusLinks.forEach(function(link) {
+          const button = document.createElement('a');
+          button.className = 'button';
+          button.href = '?status=' + link.status;
+          button.textContent = link.label;
+          button.style.marginRight = '5px';
+          filterContainer.appendChild(button);
+        });
+        
+        // Add an "All" button
+        const allButton = document.createElement('a');
+        allButton.className = 'button';
+        allButton.href = '?';
+        allButton.textContent = '{% trans "All" %}';
+        filterContainer.appendChild(allButton);
+        
+        // Insert the filter container before the toolbar
+        toolbarContainer.parentNode.insertBefore(filterContainer, toolbarContainer);
+      }
+    });
+  </script>
+{% endblock %}

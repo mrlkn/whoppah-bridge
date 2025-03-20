@@ -1,0 +1,247 @@
+/* Custom CSS for WhoppahBridge Admin */
+
+/* Main branding colors */
+:root {
+  --primary-color: #005D33;  /* Whoppah Green */
+  --primary-light: #007A44;  /* Lighter shade of Whoppah Green */
+  --primary-dark: #004626;   /* Darker shade of Whoppah Green */
+  --secondary-color: #4ade80;  /* Green-400 */
+  --text-color: #111827;     /* Gray-900 */
+  --background-light: #E6F2ED;  /* Very light green background */
+}
+
+/* Custom button styles */
+.button.default {
+  background: var(--primary-color);
+}
+
+.button.default:hover {
+  background: var(--primary-dark);
+}
+
+/* Custom header styles */
+.unfold-nav-wrapper {
+  background-color: var(--primary-color);
+}
+
+/* Make actionable elements stand out */
+.button, 
+input[type=submit], 
+input[type=button], 
+.submit-row input, 
+a.button {
+  background: var(--primary-color);
+  color: white;
+}
+
+/* Hover states */
+.button:hover, 
+input[type=submit]:hover, 
+input[type=button]:hover, 
+a.button:hover {
+  background: var(--primary-dark);
+}
+
+/* Module styling */
+.module h2, 
+.module caption, 
+.inline-group h2 {
+  background: var(--primary-color);
+}
+
+/* Dashboard styling */
+.dashboard .module table th {
+  background-color: var(--primary-light);
+}
+
+/* Selected rows */
+.row1.selected, 
+.row2.selected {
+  background-color: var(--background-light);
+}
+
+/* Enhanced form styling */
+.form-row {
+  padding: 12px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.form-row:last-child {
+  border-bottom: none;
+}
+
+.form-row.errors {
+  background-color: #fff0f0;
+  border-left: 4px solid #c00;
+  padding-left: 12px;
+}
+
+.form-row .help {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Required fields */
+.required-field {
+  border-left: 3px solid var(--primary-color) !important;
+  padding-left: 8px !important;
+}
+
+/* Field highlighting */
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary-light) !important;
+  box-shadow: 0 0 0 1px var(--primary-light) !important;
+}
+
+/* Custom breadcrumbs */
+.breadcrumbs {
+  background-color: var(--background-light);
+  padding: 10px 15px;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.breadcrumbs a {
+  color: var(--primary-color);
+}
+
+/* Help text toggle */
+.hide-help-text .help {
+  display: none;
+}
+
+.help-text-toggle {
+  margin: 10px 0;
+  display: block;
+  font-size: 0.9em;
+}
+
+/* Custom login page */
+.login {
+  background-color: var(--background-light);
+}
+
+.login #container {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+}
+
+.login #header {
+  background-color: var(--primary-color);
+  border-radius: 8px 8px 0 0;
+  padding: 15px 0;
+}
+
+.login #content {
+  padding: 20px;
+}
+
+/* Filter styles */
+.filter-button {
+  background-color: var(--secondary-color);
+}
+
+/* Message styling */
+.messagelist li {
+  padding: 12px 15px;
+  margin: 0 0 10px 0;
+  border-radius: 4px;
+}
+
+.messagelist li.success {
+  background-color: #d1fae5;
+  border-left: 4px solid #10b981;
+}
+
+.messagelist li.error {
+  background-color: #fee2e2;
+  border-left: 4px solid #ef4444;
+}
+
+.messagelist li.warning {
+  background-color: #fff7ed;
+  border-left: 4px solid #f97316;
+}
+
+.messagelist li.info {
+  background-color: #eff6ff;
+  border-left: 4px solid #3b82f6;
+}
+
+/* Responsive improvements */
+@media (max-width: 767px) {
+  .form-row div {
+    width: 100%;
+  }
+  
+  #changelist-filter {
+    width: 100%;
+    float: none;
+  }
+  
+  .changelist-form {
+    overflow-x: auto;
+  }
+}
+
+/* Fix for purple in sidebar */
+.main-nav-sidebar .main-sidebar-nav-item.is-active {
+  background-color: var(--primary-color) !important;
+}
+
+.main-nav-sidebar .main-sidebar-nav-item.is-active:hover {
+  background-color: var(--primary-light) !important;
+}
+
+.main-nav-sidebar .main-sidebar-nav-item:hover {
+  background-color: rgba(0, 93, 51, 0.1) !important;
+}
+
+/* Override any purple colors in the navigation */
+.main-sidebar-nav-item.is-active,
+.main-sidebar-nav-link.is-active,
+.sidebar-link.is-active,
+.sidebar-group-title.is-active {
+  background-color: var(--primary-color) !important;
+  color: white !important;
+}
+
+/* Fix for any other purple backgrounds */
+.unfold-sidebar .unfold-sidebar-wrapper,
+.unfold-sidebar .unfold-sidebar-nav-item.is-active,
+.unfold-sidebar-nav-item .unfold-sidebar-subnav-item.is-active {
+  background-color: var(--primary-color) !important;
+}
+
+/* Fix for any other purple text */
+.unfold-main a:not(.button),
+.unfold-main a:link:not(.button) {
+  color: var(--primary-color);
+}
+
+.unfold-main a:visited:not(.button) {
+  color: var(--primary-dark);
+}
+
+.unfold-main a:hover:not(.button) {
+  color: var(--primary-light);
+}
+
+/* Other possible purple elements */
+.select2-container--default .select2-results__option--highlighted[aria-selected],
+.paginator a:hover,
+.calendar td a:hover,
+.calendar td a:focus {
+  background-color: var(--primary-color) !important;
+}
+
+/* Selected menu items */
+li.selected {
+  background-color: var(--primary-color) !important;
+}
+
+/* Links in selected state */
+.select2-container--admin-autocomplete .select2-results__option--highlighted[aria-selected] {
+  background-color: var(--primary-color) !important;
+}

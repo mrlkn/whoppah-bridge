@@ -1,0 +1,159 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrahead %}
+  {{ block.super }}
+  <style>
+    .field-status select {
+      padding: 5px;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+    
+    .field-assigned_courier select {
+      width: 100%;
+      padding: 5px;
+      border-radius: 4px;
+    }
+    
+    .inline-group {
+      border: 1px solid #e3e3e3;
+      border-radius: 4px;
+      padding: 10px;
+      margin-bottom: 20px;
+      background-color: #f9f9f9;
+    }
+    
+    .inline-group h2 {
+      font-size: 16px;
+      border-bottom: 1px solid #e3e3e3;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+    
+    .field-two_man_delivery .help_text {
+      color: #dc3545;
+      font-weight: bold;
+    }
+    
+    /* Custom field grouping */
+    .order-status-panel {
+      display: flex;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .status-indicator {
+      padding: 8px 15px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      margin-right: 15px;
+      margin-bottom: 10px;
+    }
+    
+    .status-label {
+      font-weight: bold;
+      display: block;
+      font-size: 0.85em;
+      color: #495057;
+    }
+    
+    .status-value {
+      font-size: 1.1em;
+    }
+    
+    .dimensions-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .dimension-item {
+      flex: 1;
+      min-width: 120px;
+    }
+  </style>
+{% endblock %}
+
+{% block submit_buttons_bottom %}
+  {% if original %}
+  <div class="order-details-panel" style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 4px;">
+    <h3>{% trans "Quick Order Actions" %}</h3>
+    <div style="display: flex; gap: 10px; margin-top: 10px;">
+      <button type="button" id="mark-in-progress-btn" class="button" 
+              style="background-color: #ffc107; color: #212529;"
+              onclick="document.getElementById('id_status').value='IN_PROGRESS'; document.getElementById('order_form').submit();">
+        {% trans "Mark as In Progress" %}
+      </button>
+      
+      <button type="button" id="mark-delivered-btn" class="button" 
+              style="background-color: #28a745; color: white;"
+              onclick="document.getElementById('id_status').value='DELIVERED'; document.getElementById('order_form').submit();">
+        {% trans "Mark as Delivered" %}
+      </button>
+      
+      <button type="button" id="mark-cancelled-btn" class="button" 
+              style="background-color: #dc3545; color: white;"
+              onclick="document.getElementById('id_status').value='CANCELLED'; document.getElementById('order_form').submit();">
+        {% trans "Mark as Cancelled" %}
+      </button>
+    </div>
+  </div>
+  {% endif %}
+  {{ block.super }}
+{% endblock %}
+
+{% block after_field_sets %}
+  {% if original %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Rename the form for the quick action buttons
+      const form = document.querySelector('#order_form');
+      if (!form) {
+        document.querySelector('form').id = 'order_form';
+      }
+      
+      // Add warning for 2-man delivery
+      const twoManField = document.querySelector('.field-two_man_delivery');
+      if (twoManField && twoManField.querySelector('input:checked')) {
+        const helpText = document.createElement('p');
+        helpText.className = 'help_text';
+        helpText.textContent = '{% trans "Attention: This order requires 2-man delivery!" %}';
+        twoManField.appendChild(helpText);
+      }
+      
+      // Add custom styling to dimensions fields
+      const dimensionsFields = [
+        'height', 'width', 'depth', 'seat_height'
+      ];
+      
+      // Get all the dimension fields
+      const fields = dimensionsFields.map(field => document.querySelector(`.field-${field}`));
+      
+      // If we found all the fields
+      if (fields.every(field => field)) {
+        // Create container for dimensions
+        const container = document.createElement('div');
+        container.className = 'dimensions-container';
+        
+        // Move each field into the container
+        fields.forEach(field => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'dimension-item';
+          
+          // Move the field content to the wrapper
+          wrapper.innerHTML = field.innerHTML;
+          container.appendChild(wrapper);
+          
+          // Hide the original field
+          field.style.display = 'none';
+        });
+        
+        // Insert the container after the last dimension field
+        const lastField = fields[fields.length - 1];
+        lastField.parentNode.insertBefore(container, lastField.nextSibling);
+      }
+    });
+  </script>
+  {% endif %}
+{% endblock %}
